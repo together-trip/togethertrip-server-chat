@@ -15,9 +15,9 @@
 ## 아키텍처 원칙
 
 - 채팅 bounded context를 독립적으로 유지한다.
-- WebSocket adapter, application use case, domain 정책을 분리한다.
+- feature-based MVC 패턴을 기본으로 하고, WebSocket/API 진입점, Service, Repository, domain 책임을 분리한다.
 - 인증/인가 확인은 연결 시점과 메시지 처리 시점 모두 고려한다.
-- 외부 시스템 접근은 port/adapter 뒤에 둔다.
+- 외부 시스템 연동은 Service 내부의 명시적인 클라이언트/설정으로 분리하고, 별도 아키텍처 계층 패키지는 만들지 않는다.
 
 ## 통신 규칙
 
