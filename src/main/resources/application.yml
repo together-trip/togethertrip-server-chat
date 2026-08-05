@@ -7,3 +7,7 @@ spring:
 
 server:
   port: 8083
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] requestId=%X{requestId:--} userId=%X{userId:--} sessionId=%X{sessionId:--} chatRoomId=%X{chatRoomId:--} messageType=%X{messageType:--} %logger{36} - %msg%n"

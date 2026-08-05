@@ -18,7 +18,7 @@ class LoggingConfigurationTest {
 
         assertNotNull(pattern)
         REQUIRED_MDC_KEYS.forEach { key ->
-            assertTrue(pattern.contains("%X{$key:-}"), "console pattern에 $key 기본값이 필요합니다.")
+            assertTrue(pattern.contains("%X{$key:--}"), "console pattern에 ${key}의 '-' 기본값이 필요합니다.")
         }
     }
 
