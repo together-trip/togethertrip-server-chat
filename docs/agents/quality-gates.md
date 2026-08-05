@@ -13,6 +13,8 @@
 - 메시지 저장/조회 권한
 - 연결과 메시지 처리 rate limit
 - 민감정보 로그 노출 방지
+- HTTP/WebSocket 로그의 query, body, header, 메시지와 예외 메시지 원문 비노출
+- 요청·메시지 처리 종료 후 기존 MDC 복원
 
 ## 완료 기준
 
