@@ -2,7 +2,6 @@ package com.togethertrip.chat.global.logging
 
 object SensitiveDataMasker {
     private const val MASK = "***"
-    private const val MAX_SUMMARY_LENGTH = 200
 
     private val keyValuePatterns = listOf(
         Regex("(?i)(password|passwd|pwd|token|accessToken|refreshToken|authorization|secret|message|content)=([^,)}\\s]+)"),
@@ -30,19 +29,5 @@ object SensitiveDataMasker {
         masked = emailPattern.replace(masked, MASK)
 
         return masked
-    }
-
-    fun summarize(value: Any?): String {
-        val summary = when (value) {
-            null -> "null"
-            is CharSequence -> value.toString()
-            is Number, is Boolean, is Enum<*> -> value.toString()
-            is Collection<*> -> "${value::class.simpleName}(size=${value.size})"
-            is Map<*, *> -> "${value::class.simpleName}(size=${value.size}, keys=${value.keys.joinToString(limit = 5)})"
-            is Array<*> -> "Array(size=${value.size})"
-            else -> value.toString()
-        }
-
-        return mask(summary).take(MAX_SUMMARY_LENGTH)
     }
 }

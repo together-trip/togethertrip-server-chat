@@ -36,11 +36,10 @@ class ServiceLoggingAspect {
             result
         } catch (exception: Throwable) {
             logger.warn(
-                "chat method failed method={} elapsedMs={} exception={} message={}",
+                "chat method failed method={} elapsedMs={} exceptionType={}",
                 methodName,
                 elapsedMillis(startedAt),
                 exception::class.simpleName,
-                exception.message?.let(SensitiveDataMasker::mask),
             )
             throw exception
         }
@@ -48,7 +47,7 @@ class ServiceLoggingAspect {
 
     private fun summarizeArgs(args: Array<Any?>): String {
         return args.joinToString(prefix = "[", postfix = "]", limit = MAX_ARGUMENT_COUNT) {
-            SensitiveDataMasker.summarize(it)
+            SafeLogValueSummarizer.summarize(it)
         }
     }
 
