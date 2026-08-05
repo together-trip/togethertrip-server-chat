@@ -76,6 +76,23 @@ class RequestLoggingFilterTest {
     }
 
     @Test
+    fun `길이 제한을 넘은 요청 ID는 새 UUID로 교체한다`() {
+        val overlongRequestId = "a".repeat(101)
+        val request = MockHttpServletRequest("GET", "/chat/rooms").apply {
+            addHeader(RequestLoggingFilter.REQUEST_ID_HEADER, overlongRequestId)
+        }
+        val response = MockHttpServletResponse()
+        var requestIdInChain: String? = null
+
+        filter.doFilter(request, response, FilterChain { _, _ ->
+            requestIdInChain = MDC.get(ChatLoggingContext.REQUEST_ID)
+        })
+
+        assertNotEquals(overlongRequestId, requestIdInChain)
+        assertTrue(requireNotNull(requestIdInChain).matches(UUID_PATTERN))
+    }
+
+    @Test
     fun `요청 처리 후 기존 MDC를 복원한다`() {
         MDC.put("traceId", "outer-trace")
         MDC.put(ChatLoggingContext.REQUEST_ID, "outer-request")
