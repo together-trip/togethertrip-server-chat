@@ -22,6 +22,7 @@ class RequestLoggingFilter(
     ) {
         val startedAt = System.nanoTime()
         val requestId = resolveRequestId(request)
+        val previousMdc = MDC.getCopyOfContextMap()
         var failure: Throwable? = null
 
         MDC.put(ChatLoggingContext.REQUEST_ID, requestId)
@@ -34,15 +35,17 @@ class RequestLoggingFilter(
             failure = exception
             throw exception
         } finally {
-            logRequest(request, response, elapsedMillis(startedAt), failure)
-            MDC.clear()
+            try {
+                logRequest(request, response, elapsedMillis(startedAt), failure)
+            } finally {
+                restoreMdc(previousMdc)
+            }
         }
     }
 
     private fun resolveRequestId(request: HttpServletRequest): String {
         return request.getHeader(REQUEST_ID_HEADER)
-            ?.takeIf { it.isNotBlank() }
-            ?.take(MAX_REQUEST_ID_LENGTH)
+            ?.takeIf(REQUEST_ID_PATTERN::matches)
             ?: requestIdGenerator.generate()
     }
 
@@ -52,11 +55,7 @@ class RequestLoggingFilter(
         elapsedMs: Long,
         failure: Throwable?,
     ) {
-        val queryString = request.queryString
-            ?.let(SensitiveDataMasker::mask)
-            ?.let { "?$it" }
-            ?: ""
-        val path = "${request.requestURI}$queryString"
+        val path = request.requestURI
 
         if (failure == null) {
             log.info(
@@ -68,14 +67,21 @@ class RequestLoggingFilter(
             )
         } else {
             log.error(
-                "chat http request failed method={} path={} status={} elapsedMs={} exception={}",
+                "chat http request failed method={} path={} status={} elapsedMs={} exceptionType={}",
                 request.method,
                 path,
                 response.status,
                 elapsedMs,
                 failure::class.simpleName,
-                failure,
             )
+        }
+    }
+
+    private fun restoreMdc(previousMdc: Map<String, String>?) {
+        if (previousMdc.isNullOrEmpty()) {
+            MDC.clear()
+        } else {
+            MDC.setContextMap(previousMdc)
         }
     }
 
@@ -86,5 +92,6 @@ class RequestLoggingFilter(
     companion object {
         const val REQUEST_ID_HEADER = "X-Request-Id"
         private const val MAX_REQUEST_ID_LENGTH = 100
+        private val REQUEST_ID_PATTERN = Regex("[A-Za-z0-9._:-]{1,$MAX_REQUEST_ID_LENGTH}")
     }
 }
